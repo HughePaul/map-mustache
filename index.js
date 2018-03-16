@@ -21,6 +21,7 @@ function processHtml(id, html, nodes) {
 
     nodes.node(id);
 
+    partials.forEach(partial => console.log(id, partial));
     partials.forEach(partial => nodes.edge(id, partial));
 }
 
@@ -54,7 +55,7 @@ async function main(argv) {
     console.log('Reading files');
     for (let file of files) {
         let name = path.basename(file, extension);
-        let group = path.dirname(file).substr(dir.length);
+        let group = path.dirname(file).substr(dir.length + 1);
         let id = group ? group + '/' + name : name;
 
         let html = await fs.readFile(file);
