@@ -11,57 +11,71 @@ const path = require('path');
 const fs = require('fs-extra');
 
 function processHtml(id, html, nodes) {
-    let partials = [];
-    let rePartials = /\{\{\s*>\s*([^\s}]+)\s*\}\}/g;
     let match;
-    while ((match = rePartials.exec(html))) {
-        let partial = match[1];
-        partials.push(partial);
-    }
 
     nodes.node(id);
 
-    partials.forEach(partial => console.log(id, partial));
-    partials.forEach(partial => nodes.edge(id, partial));
+    let rePartials = /\{\{\s*>\s*([^\s}]+)\s*\}\}/g;
+    while ((match = rePartials.exec(html))) {
+        let partial = match[1];
+        nodes.edge(id, partial);
+    }
+
+    let reLayouts = /\{\{\s*<\s*([^\s}]+)\s*\}\}/g;
+    while ((match = reLayouts.exec(html))) {
+        let layout = match[1];
+        nodes.edge(id, layout, { style: 'dashed' });
+    }
 }
 
 async function main(argv) {
 
-    const dir = path.resolve(
-        argv.dir ||
-        argv.d ||
-        argv._.shift() ||
-        process.exit(process.stderr.write('npm start [-d] /directory/ [-o] map.svg\n') - 1));
+    const output = path.resolve(
+        argv.o ||
+        argv.output ||
+        argv.svg ||
+        'map.svg');
 
     const extension =
         argv.extension ||
         argv.e ||
         '.mustache';
 
-    const output = path.resolve(
-        argv.o ||
-        argv.output ||
-        argv.svg ||
-        argv._.shift() ||
-        'map.svg');
+    const dirs = argv._;
 
-    console.log('Generating map for %s for files *%s to %s', dir, extension, output);
+    if (argv.d) dirs.push(argv.d);
+    if (argv.dir) dirs.push(argv.dir);
 
-    let nodes = new GraphvizPath({
-        css: '.node { cursor: pointer; }'
-    });
+    if (!dirs.length) {
+        process.stderr.write('node . [-d /directory] [-o map.svg] [-e .extension]\n');
+        process.exit(-1);
+    }
 
-    let fileGlob = dir + '/**/*' + extension;
-    let files = await glob(fileGlob);
+    console.log('Generating map for files *%s to %s', extension, output);
 
-    console.log('Reading files');
-    for (let file of files) {
-        let name = path.basename(file, extension);
-        let group = path.dirname(file).substr(dir.length + 1);
-        let id = group ? group + '/' + name : name;
+    let nodes = new GraphvizPath();
 
-        let html = await fs.readFile(file);
-        processHtml(id, html, nodes);
+    for (let dirArg of dirs) {
+        let [prefix, dir] = dirArg.split('=');
+        if (!dir) {
+            dir = prefix;
+            prefix = null;
+        }
+        dir = path.resolve(dir);
+
+        console.log('Reading files for %s (%s)', dir, prefix || 'no prefix');
+        let fileGlob = dir + '/**/*' + extension;
+        let files = await glob(fileGlob);
+
+        for (let file of files) {
+            let name = path.basename(file, extension);
+            let group = path.dirname(file).substr(dir.length + 1);
+            let id = group ? group + '/' + name : name;
+            if (prefix) id = prefix + id;
+
+            let html = await fs.readFile(file);
+            processHtml(id, html, nodes);
+        }
     }
 
     console.log('Generating svg');
