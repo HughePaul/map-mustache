@@ -47,7 +47,9 @@ async function main(argv) {
 
     console.log('Generating map for %s for files *%s to %s', dir, extension, output);
 
-    let nodes = new GraphvizPath();
+    let nodes = new GraphvizPath({
+        css: '.node { cursor: pointer; }'
+    });
 
     let fileGlob = dir + '/**/*' + extension;
     let files = await glob(fileGlob);
