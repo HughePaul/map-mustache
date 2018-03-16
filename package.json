@@ -1,0 +1,34 @@
+{
+  "name": "map-mustache",
+  "version": "1.0.0",
+  "description": "map uses of partials and templates",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "eslint ."
+  },
+  "author": "Paul Winkler",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "glob": "^7.1.2",
+    "glob-promise": "^3.4.0",
+    "graphviz-path": "latest",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HughePaul/map-mustache.git"
+  },
+  "keywords": [
+    "graphviz",
+    "mustache"
+  ],
+  "bugs": {
+    "url": "https://github.com/HughePaul/map-mustache/issues"
+  },
+  "homepage": "https://github.com/HughePaul/map-mustache#readme"
+}
