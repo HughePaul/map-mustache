@@ -71,7 +71,7 @@ async function main(argv) {
             let name = path.basename(file, extension);
             let group = path.dirname(file).substr(dir.length + 1);
             let id = group ? group + '/' + name : name;
-            if (prefix) id = prefix + id;
+            if (prefix) id = prefix + ': ' + id;
 
             let html = await fs.readFile(file);
             processHtml(id, html, nodes);
