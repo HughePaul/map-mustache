@@ -47,7 +47,8 @@ async function main(argv) {
     if (argv.dir) dirs.push(argv.dir);
 
     if (!dirs.length) {
-        process.stderr.write('node . [-d /directory] [-o map.svg] [-e .extension]\n');
+        process.stderr.write(
+            'node . [prefix=]/directory ... [-o output.svg] [-e .extension] [-r]\n');
         process.exit(-1);
     }
 
@@ -77,6 +78,12 @@ async function main(argv) {
             processHtml(id, html, nodes);
         }
     }
+
+    if (!argv['dont-generate'])
+        nodes.generateMissingNodes();
+
+    if (argv['remove-unconnected'] || argv.r)
+        nodes.removeUnconnectedNodes();
 
     console.log('Generating svg');
     let svg = nodes.svg();
