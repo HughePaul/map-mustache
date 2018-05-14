@@ -15,10 +15,13 @@ function processHtml(id, html, nodes, group) {
 
     nodes.node(id, { group });
 
+    let partials = {};
+
     let rePartials = /\{\{\s*>\s*([^\s}]+)\s*\}\}/g;
     while ((match = rePartials.exec(html))) {
         let partial = match[1];
-        nodes.edge(id, partial);
+        if (!partials[partials]) nodes.edge(id, partial);
+        partials[partials] = true;
     }
 
     let reLayouts = /\{\{\s*<\s*([^\s}]+)\s*\}\}/g;
