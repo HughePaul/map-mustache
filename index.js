@@ -10,10 +10,10 @@ const glob = require('glob-promise');
 const path = require('path');
 const fs = require('fs-extra');
 
-function processHtml(id, html, nodes) {
+function processHtml(id, html, nodes, group) {
     let match;
 
-    nodes.node(id);
+    nodes.node(id, { group });
 
     let rePartials = /\{\{\s*>\s*([^\s}]+)\s*\}\}/g;
     while ((match = rePartials.exec(html))) {
@@ -48,7 +48,7 @@ async function main(argv) {
 
     if (!dirs.length) {
         process.stderr.write(
-            'node . [prefix=]/directory ... [-o output.svg] [-e .extension] [-r]\n');
+            'node . [[group=]prefix=]/directory ... [-o output.svg] [-e .extension] [-r]\n');
         process.exit(-1);
     }
 
@@ -57,11 +57,10 @@ async function main(argv) {
     let nodes = new GraphvizPath();
 
     for (let dirArg of dirs) {
-        let [prefix, dir] = dirArg.split('=');
-        if (!dir) {
-            dir = prefix;
-            prefix = null;
-        }
+        let dirArgParts = dirArg.split('=');
+        let dir = dirArgParts.pop();
+        let prefix = dirArgParts.pop();
+        let group = dirArgParts.pop();
         dir = path.resolve(dir);
 
         console.log('Reading files for %s (%s)', dir, prefix || 'no prefix');
@@ -70,12 +69,12 @@ async function main(argv) {
 
         for (let file of files) {
             let name = path.basename(file, extension);
-            let group = path.dirname(file).substr(dir.length + 1);
-            let id = group ? group + '/' + name : name;
+            let relativeDir = path.dirname(file).substr(dir.length + 1);
+            let id = relativeDir ? relativeDir + '/' + name : name;
             if (prefix) id = prefix + ': ' + id;
 
             let html = await fs.readFile(file);
-            processHtml(id, html, nodes);
+            processHtml(id, html, nodes, group);
         }
     }
 
